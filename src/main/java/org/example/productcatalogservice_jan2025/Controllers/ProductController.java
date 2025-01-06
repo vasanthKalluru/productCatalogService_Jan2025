@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,7 +20,16 @@ public class ProductController {
 
     @GetMapping(path = "/products")
     public List<ProductDto> getAllProducts() {
-        return null;
+
+            List<Product> products = productService.getAllProducts();
+            List<ProductDto> productDtos = new ArrayList<>();
+            if(products != null && !products.isEmpty()) {
+                for (Product product : products) {
+                    productDtos.add(from(product));
+                }
+                return productDtos;
+            }
+            return productDtos;
     }
 
     @GetMapping(path = "/products/{id}")
@@ -43,6 +53,12 @@ public class ProductController {
         return null;
     }
 
+    @PutMapping("/products/{id}")
+    public ProductDto replaceProduct(@PathVariable("id") Long id, @RequestBody ProductDto productDto) {
+        Product product = productService.replaceProduct(id,from(productDto));
+        return from(product);
+    }
+
     private ProductDto from(Product product) {
         ProductDto productDto = new ProductDto();
         productDto.setId(product.getId());
@@ -60,6 +76,24 @@ public class ProductController {
         }
 
         return productDto;
+    }
+
+    private Product from(ProductDto productDto) {
+        Product product = new Product();
+        product.setId(productDto.getId());
+        product.setAmount(productDto.getAmount());
+        product.setDescription(productDto.getDescription());
+        product.setTitle(productDto.getTitle());
+        product.setImageUrl(productDto.getImageUrl());
+        if(productDto.getCategory() != null) {
+            CategoryDto categoryDto = productDto.getCategory();
+            Category category = new Category();
+            category.setId(categoryDto.getId());
+            category.setName(categoryDto.getName());
+            category.setDescription(categoryDto.getDescription());
+            product.setCategory(category);
+        }
+        return product;
     }
 
 
