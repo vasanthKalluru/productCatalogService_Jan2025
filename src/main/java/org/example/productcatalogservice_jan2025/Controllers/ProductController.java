@@ -2,6 +2,7 @@ package org.example.productcatalogservice_jan2025.Controllers;
 
 import org.example.productcatalogservice_jan2025.dtos.CategoryDto;
 import org.example.productcatalogservice_jan2025.dtos.ProductDto;
+import org.example.productcatalogservice_jan2025.exceptions.ProductNotFoundException;
 import org.example.productcatalogservice_jan2025.models.Category;
 import org.example.productcatalogservice_jan2025.models.Product;
 import org.example.productcatalogservice_jan2025.services.IProductService;
@@ -36,15 +37,18 @@ public class ProductController {
     public ResponseEntity<ProductDto> getProductById(@PathVariable("id") Long productId) {
         try {
             if(productId<=0)
-                throw new RuntimeException("Product not found");
+                throw new ProductNotFoundException(productId.toString());
+            if(productId > 10)
+                throw new RuntimeException();
 
             Product product = productService.getProductById(productId);
             if (product == null)
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             else
                 return new ResponseEntity<>(from(product), HttpStatus.OK);
-        } catch(RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch(ProductNotFoundException e) {
+            //return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw e;
         }
     }
 
@@ -94,6 +98,11 @@ public class ProductController {
             product.setCategory(category);
         }
         return product;
+    }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    private ResponseEntity<String> handleRuntimeException(RuntimeException e) {
+        return new ResponseEntity<>("product with id: "+e.getMessage()+" not found.", HttpStatus.BAD_REQUEST);
     }
 
 
