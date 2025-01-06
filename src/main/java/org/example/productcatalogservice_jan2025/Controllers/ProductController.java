@@ -54,7 +54,8 @@ public class ProductController {
 
     @PostMapping("/products")
     public ProductDto createProduct(@RequestBody ProductDto productDto) {
-        return null;
+        Product product = from(productDto);
+        return from(productService.createProduct(product));
     }
 
     @PutMapping("/products/{id}")
